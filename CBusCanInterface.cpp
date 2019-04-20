@@ -1,9 +1,9 @@
 #include "CBusCanInterface.h"
-
-#include <QDebug>
+#include "CDevices.h"
 
 CBusCanInterface::CBusCanInterface()
 {
+    connect(&m_streamingTimer, &QTimer::timeout, this, &CBusCanInterface::streamingEventLoop);
 }
 
 CBusCanInterface::~CBusCanInterface()
@@ -81,31 +81,74 @@ void CBusCanInterface::framesReceived()
             break;
         case QCanBusFrame::UnknownFrame:
         case QCanBusFrame::InvalidFrame:
-            qDebug() << __FUNCTION__ << "Invalid Frame";
+            qDebug() << __FUNCTION__ << "Invalid/error Frame";
             break;
         case QCanBusFrame::DataFrame:
-            qDebug() << __FUNCTION__ << "Data received";
+            computeComplexRequest(frame.frameId(), frame.payload());
             break;
         case QCanBusFrame::RemoteRequestFrame:
-            qDebug() << __FUNCTION__ << "Request Received";
+            computeRequest(frame.frameId());
             break;
         }
+    }
+}
 
-        if (frame.frameType() == QCanBusFrame::ErrorFrame)
+void CBusCanInterface::computeComplexRequest(quint32 id, QByteArray data)
+{
+    switch (id)
+    {
+    case LedBlue:
+        if (data.length() == 1)
         {
-            data = mp_canDevice->interpretErrorFrame(frame);
+            CDevices::setLedBlue(data[0]);
         }
-        else
+        break;
+    case LedGreen:
+        if (data.length() == 1)
         {
-            data = frame.toString();
+            CDevices::setLedGreen(data[0]);
         }
+        break;
+    case LedRed:
+        if (data.length() == 1)
+        {
+            CDevices::setLedRed(data[0]);
+        }
+        break;
+    default:
+        break;
+    }
+}
 
+void CBusCanInterface::computeRequest(quint32 id)
+{
+    switch (id)
+    {
+    case StreamingMode:
+        m_streamingMode = !m_streamingMode; //on inverse le comportement
+        if (m_streamingMode) // si Vrai on lance le streaming (démarrage du timer)
+        {
+            m_streamingTimer.start(1000); // toutes les secondes
+        }
+        else // si Faux, on arrête le streaming (arrêt du timer)
+        {
+            m_streamingTimer.stop();
+        }
+        buildAnswer(StreamingMode, m_streamingMode);
+        qDebug() << __FUNCTION__ << "Streaming Mode Switch Request";
+        break;
     }
 }
 
 void CBusCanInterface::framesWritten()
 {
     qDebug() << __FUNCTION__;
+}
+
+void CBusCanInterface::streamingEventLoop()
+{
+    // lecture de la température du processeur
+
 }
 
 void CBusCanInterface::sendFrame(const QCanBusFrame &frame) const
