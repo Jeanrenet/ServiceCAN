@@ -32,6 +32,8 @@ bool CBusCanInterface::init(const QString &a_pluginType, const QString &a_interf
     }
     else
     {
+        mp_canDevice->connectDevice();
+
         //connexion des différents signaux provenant de la classe instanciée
         connect(mp_canDevice, &QCanBusDevice::errorOccurred, this, &CBusCanInterface::errorOccurred);
         connect(mp_canDevice, &QCanBusDevice::framesReceived, this, &CBusCanInterface::framesReceived);
@@ -79,15 +81,16 @@ void CBusCanInterface::framesReceived()
             break;
         case QCanBusFrame::UnknownFrame:
         case QCanBusFrame::InvalidFrame:
-            qDebug() << __FUNCTION__ << "Meh..1";
+            qDebug() << __FUNCTION__ << "Invalid Frame";
             break;
         case QCanBusFrame::DataFrame:
-            qDebug() << __FUNCTION__ << "Meh..2";
+            qDebug() << __FUNCTION__ << "Data received";
             break;
         case QCanBusFrame::RemoteRequestFrame:
-            qDebug() << __FUNCTION__ << "Meh..3";
+            qDebug() << __FUNCTION__ << "Request Received";
             break;
         }
+
         if (frame.frameType() == QCanBusFrame::ErrorFrame)
         {
             data = mp_canDevice->interpretErrorFrame(frame);
@@ -96,6 +99,7 @@ void CBusCanInterface::framesReceived()
         {
             data = frame.toString();
         }
+
     }
 }
 
