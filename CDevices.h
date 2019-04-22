@@ -12,6 +12,9 @@ public:
     static void setLedBlue(quint32 value);
     static void setLedGreen(quint32 value);
     static void setLedRed(quint32 value);
+
+    static void getCanRX(quint32 &rx);
+    static void getCanTX(quint32 &tx);
 };
 
 #endif // CDEVICES_H

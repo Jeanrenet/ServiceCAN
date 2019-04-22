@@ -34,3 +34,29 @@ void CDevices::setLedRed(quint32 value)
     qDebug() << __FUNCTION__ << value;
     writeToFile(LED_RED,QByteArray::number(value));
 }
+
+void CDevices::getCanRX(quint32 &rx)
+{
+    QFile file("/sys/devices/platform/ahb/ahb:apb/fc050000.can/net/can0/statistics/rx_packets");
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+        QByteArray data = file.readAll();
+        data.remove(data.length()-1, 1);
+        rx = data.toInt();
+        file.close();
+    }
+}
+
+void CDevices::getCanTX(quint32 &tx)
+{
+    QFile file("/sys/devices/platform/ahb/ahb:apb/fc050000.can/net/can0/statistics/tx_packets");
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+        QByteArray data = file.readAll();
+        data.remove(data.length()-1, 1);
+        tx = data.toInt();
+        file.close();
+    }
+}

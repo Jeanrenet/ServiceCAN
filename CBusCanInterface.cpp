@@ -142,13 +142,20 @@ void CBusCanInterface::computeRequest(quint32 id)
 
 void CBusCanInterface::framesWritten()
 {
-    qDebug() << __FUNCTION__;
+    //qDebug() << __FUNCTION__;
 }
 
 void CBusCanInterface::streamingEventLoop()
 {
-    // lecture de la température du processeur
+    // lecture des données recues sur can0
+    quint32 rxCAN;
+    CDevices::getCanRX(rxCAN);
 
+    quint32 speed = rxCAN - m_lastSavedRXCan;
+
+    m_lastSavedRXCan = rxCAN;
+
+    buildAnswer(CANRXSpeed, speed);
 }
 
 void CBusCanInterface::sendFrame(const QCanBusFrame &frame) const

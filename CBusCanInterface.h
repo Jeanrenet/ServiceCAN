@@ -18,6 +18,7 @@ public:
         LedBlue             = 1,
         LedGreen            = 2,
         LedRed              = 3,
+        CANRXSpeed          = 4,
 
     }RequestProtocolDefinition;
 
@@ -50,6 +51,8 @@ private:
     QCanBusDevice       *mp_canDevice{nullptr};
     bool                m_streamingMode{false};
     QTimer              m_streamingTimer;
+
+    quint32             m_lastSavedRXCan{0};
 };
 
 #endif // CBUSCANINTERFACE_H
